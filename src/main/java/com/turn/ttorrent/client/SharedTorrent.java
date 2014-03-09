@@ -645,25 +645,29 @@ public class SharedTorrent extends Torrent implements PeerActivityListener {
 				"that was already requested from another peer.");
 		}
 
-		// Extract the RAREST_PIECE_JITTER rarest pieces from the interesting
-		// pieces of this peer.
-		ArrayList<Piece> choice = new ArrayList<Piece>(RAREST_PIECE_JITTER);
-		synchronized (this.rarest) {
-			for (Piece piece : this.rarest) {
-				if (interesting.get(piece.getIndex())) {
-					choice.add(piece);
-					if (choice.size() >= RAREST_PIECE_JITTER) {
-						break;
-					}
-				}
-			}
-		}
 
-		Piece chosen = choice.get(
-			this.random.nextInt(
-				Math.min(choice.size(),
-				RAREST_PIECE_JITTER)));
-		this.requestedPieces.set(chosen.getIndex());
+		// just iterate over the pieces, find any which is available, a request it. 
+				
+		ArrayList<Piece> choices = new ArrayList<Piece>();
+	
+		for (Piece piece : this.pieces) {
+			if (piece.available() 
+					&& interesting.get(piece.getIndex()) 
+					&& !this.requestedPieces.get(piece.getIndex()) ) {
+				//choices.add(piece);
+				choices.add(piece);
+				logger.debug("choosen : " + piece.getIndex());
+				break;
+			}		
+		}
+		
+		if (choices.isEmpty()) {
+			System.out.println("Something went wrong...");
+		}
+			
+		Piece chosen = choices.get(0);
+
+		
 
 		logger.trace("Requesting {} from {}, we now have {} " +
 				"outstanding request(s): {}",
