@@ -1,0 +1,54 @@
+
+apply plugin:'application'
+apply plugin: 'java'
+
+version = '0.1'
+
+
+mainClassName = "org.nosoft.Test1"
+
+repositories {
+        mavenCentral()
+        maven { url "http://download.eclipse.org/rt/eclipselink/maven.repo" }	
+		maven {	url "https://repository.jboss.org/nexus/content/repositories/thirdparty-releases" }		
+}
+
+
+compileJava.options.compilerArgs = ['-Xlint:unchecked','-Xlint:deprecation']
+
+dependencies {
+
+        compile 'commons-io:commons-io:2.4'
+		    compile 'commons-codec:commons-codec:1.8'	
+        compile 'org.simpleframework:simple:4.1.21'
+    		compile 'org.slf4j:slf4j-log4j12:1.6.4'
+  		  compile 'org.slf4j:slf4j-api:1.6.4'
+		    compile 'net.sf:jargs:1.0'
+		
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+}
+
+
+task copyToLib( type: Copy) {
+    into "$buildDir/libs"
+    from configurations.runtime
+}
+
+
+
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+
+    manifest {
+        attributes 'Main-Class': 'org.nosoft.Test1'
+        def manifestClasspath = configurations.runtime.collect { it.getName() }.join(' ')
+        attributes 'Class-Path' : manifestClasspath
+    }
+}
